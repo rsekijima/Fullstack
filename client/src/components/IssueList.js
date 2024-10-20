@@ -7,11 +7,14 @@ import {
     Box,
     Button,
 } from '@mui/material';
+import IssueModal from './IssueModal'; // Import the modal component
 
 const IssueList = () => {
     const [issues, setIssues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [selectedIssue, setSelectedIssue] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
 
     useEffect(() => {
         fetchIssues();
@@ -36,11 +39,30 @@ const IssueList = () => {
                 method: 'DELETE',
             });
             if (!response.ok) throw new Error('Failed to delete issue');
-
             fetchIssues();
         } catch (err) {
             setError(err.message);
         }
+    };
+
+    const handleEdit = (issue) => {
+        setSelectedIssue(issue);
+        setIsModalOpen(true);
+    };
+
+    const handleCreate = () => {
+        setSelectedIssue(null);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedIssue(null);
+        setIsModalOpen(false);
+    };
+
+    const handleUpdate = () => {
+        fetchIssues();
+        handleCloseModal();
     };
 
     if (loading) return <></>;
@@ -55,7 +77,9 @@ const IssueList = () => {
                 {issues.map(issue => (
                     <Card key={issue.id} style={{ position: 'relative' }}>
                         <CardContent>
-                            <Typography variant="h5">{issue.title}</Typography>
+                            <Typography variant="h5" onClick={() => handleEdit(issue)}>
+                                {issue.title}
+                            </Typography>
                             <Typography variant="body" color="textSecondary">
                                 {issue.description || 'No description provided.'}
                             </Typography>
@@ -71,6 +95,12 @@ const IssueList = () => {
                     </Card>
                 ))}
             </Box>
+            <Button color="primary" onClick={handleCreate}>
+                Create New Issue
+            </Button>
+
+
+            {isModalOpen && <IssueModal issue={selectedIssue} onClose={handleCloseModal} onUpdate={handleUpdate} />}
         </Container>
     );
 };
