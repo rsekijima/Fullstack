@@ -3,10 +3,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const issueRoutes = require('./routes/issueRoutes');
 const { connectDB, sequelize } = require('./config/db');
+const cors = require('cors');
+
 require('dotenv').config();
 
 const app = express();
-
+app.use(cors());
 app.use(bodyParser.json());
 app.use('/api/issues', issueRoutes);
 
