@@ -1,19 +1,26 @@
 version: "3.8"
 services:
-  # client:
-  #   build: ./client
-  #   container_name: client
-  #   ports:
-  #     - '3000:3000'
-  # backend:
-  #   build: ./server
-  #   container_name: server
-  #   ports:
-  #     - '5000:5000'
+  client:
+    build: ./client
+    container_name: client
+    ports:
+      - '3000:3000'
+  backend:
+    build: ./server
+    container_name: server
+    env_file:
+      - ./server/.env
+    ports:
+      - '5000:5000'
+    depends_on:
+       db:
+        condition: service_healthy
   db:
     image: postgres:14.1-alpine
     restart: always
     environment:
+      - DB_HOST=db
+      - DB_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=mydb
@@ -21,6 +28,11 @@ services:
       - '5432:5432'
     volumes: 
       - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   db:
     driver: local
